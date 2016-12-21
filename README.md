@@ -1,0 +1,1 @@
+Dummy Dictionary service for use in development of Concept Dictionary Manager at https://gitlab.mitre.org/CDC-SDP/concept-dictionary-manager
