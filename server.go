@@ -27,7 +27,7 @@ func main() {
 		c.JSON(200, resultCodes)
 	})
 
-	s.Run()
+	s.Run(":8085")
 }
 
 func queryCodes(queryString string, db *sql.DB) []string {
