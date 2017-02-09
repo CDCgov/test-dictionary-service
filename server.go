@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	pq "github.com/lib/pq"
@@ -13,16 +14,23 @@ import (
 func main() {
 	s := gin.Default()
 
-	connInfo := fmt.Sprintf(
-		"user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_DATABASE"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_PORT_5432_TCP_ADDR"),
-		os.Getenv("POSTGRES_PORT_5432_TCP_PORT"),
-	)
+	var err error
+	var db *sql.DB
 
-	db, err := sql.Open("postgres", connInfo)
+	if os.Getenv("POSTGRES_USER") != "" {
+		connInfo := fmt.Sprintf(
+			"user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
+			os.Getenv("POSTGRES_USER"),
+			os.Getenv("POSTGRES_DATABASE"),
+			os.Getenv("POSTGRES_PASSWORD"),
+			os.Getenv("POSTGRES_PORT_5432_TCP_ADDR"),
+			os.Getenv("POSTGRES_PORT_5432_TCP_PORT"),
+		)
+		db, err = sql.Open("postgres", connInfo)
+	} else {
+		db, err = sql.Open("postgres", "user=testservice dbname=test_service sslmode=disable")
+	}
+
 	if err != nil {
 		fmt.Printf("Couldn't connect to postgres: %v", err)
 	}
@@ -39,20 +47,21 @@ func main() {
 	s.Run(":8080")
 }
 
-func queryCodes(queryString string, db *sql.DB) []string {
-	rows, err := db.Query("SELECT * FROM codes WHERE code LIKE '%' || $1 || '%'", queryString)
+func queryCodes(queryString string, db *sql.DB) [][]string {
+	rows, err := db.Query("SELECT * FROM codes WHERE code LIKE '%' || $1 || '%' OR description LIKE '%' || $1 || '%'", queryString)
 	if err != nil {
 		fmt.Printf("Error querying postgres: %v", err)
 	}
-	var results []string
+	var results [][]string
 	defer rows.Close()
 	for rows.Next() {
-		var result string
-		err = rows.Scan(&result)
+		var code string
+		var desc string
+		err = rows.Scan(&code, &desc)
 		if err != nil {
 			fmt.Printf("Error scanning result rows: %v", err)
 		}
-		results = append(results, result)
+		results = append(results, []string{code, desc})
 	}
 	err = rows.Err()
 	if err != nil {
@@ -81,7 +90,7 @@ func loadCodes(filepath string, db *sql.DB) {
 		fmt.Printf("Couldn't create transaction: %v", err)
 	}
 
-	stmt, err := txn.Prepare(pq.CopyIn("codes", "code"))
+	stmt, err := txn.Prepare(pq.CopyIn("codes", "code", "description"))
 	if err != nil {
 		fmt.Printf("Couldn't create transaction statement: %v", err)
 	}
@@ -94,8 +103,9 @@ func loadCodes(filepath string, db *sql.DB) {
 	r := bufio.NewReader(codeFile)
 	line, isPrefix, err := r.ReadLine()
 	for err == nil && !isPrefix {
-		code := string(line)
-		_, err = stmt.Exec(code)
+		split := strings.Split(string(line), ",")
+		fmt.Println(split)
+		_, err = stmt.Exec(split[0], split[1])
 		line, isPrefix, err = r.ReadLine()
 	}
 	if isPrefix {
