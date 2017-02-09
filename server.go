@@ -63,6 +63,9 @@ func queryCodes(queryString string, db *sql.DB) []string {
 
 func loadCodes(filepath string, db *sql.DB) {
 	rows, err := db.Query("SELECT count(1) FROM codes")
+	if err != nil {
+		fmt.Printf("Error querying postgres: %v", err)
+	}
 	for rows.Next() {
 		var count int
 		err = rows.Scan(&count)
