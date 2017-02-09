@@ -13,7 +13,16 @@ import (
 func main() {
 	s := gin.Default()
 
-	db, err := sql.Open("postgres", "user=testservice dbname=test_service sslmode=disable")
+	connInfo := fmt.Sprintf(
+		"user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_DATABASE"),
+		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_PORT_5432_TCP_ADDR"),
+		os.Getenv("POSTGRES_PORT_5432_TCP_PORT"),
+	)
+
+	db, err := sql.Open("postgres", connInfo)
 	if err != nil {
 		fmt.Printf("Couldn't connect to postgres: %v", err)
 	}
