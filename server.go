@@ -36,6 +36,7 @@ func main() {
 	}
 	defer db.Close()
 
+	conditionalCreateTable(db)
 	loadCodes("sample_codes.csv", db)
 
 	s.GET("/codes", func(c *gin.Context) {
@@ -45,6 +46,47 @@ func main() {
 	})
 
 	s.Run(":8080")
+}
+
+func conditionalCreateTable(db *sql.DB) {
+	tables, err := db.Query("SELECT table_name FROM information_schema.tables WHERE table_name = 'codes'")
+	defer tables.Close()
+	var tableResults []string
+	for tables.Next() {
+		var table string
+		err = tables.Scan(&table)
+		if err != nil {
+			fmt.Printf("Error scanning table rows: %v", err)
+		}
+		tableResults = append(tableResults, table)
+	}
+	if len(tableResults) == 1 {
+		fmt.Println("Codes table found. Skipping creation.")
+	} else if len(tableResults) == 0 {
+		fmt.Println("Codes table not found. Creating table.")
+
+		txn, err := db.Begin()
+		if err != nil {
+			fmt.Printf("Couldn't create transaction: %v", err)
+		}
+
+		stmt, err := txn.Prepare("CREATE TABLE codes (code text, description text)")
+		_, err = stmt.Exec()
+		if err != nil {
+			fmt.Printf("Couldn't execute table creation transaction statement: %v", err)
+		}
+
+		err = stmt.Close()
+		if err != nil {
+			fmt.Printf("Couldn't close table creation transaction statement: %v", err)
+		}
+
+		err = txn.Commit()
+		if err != nil {
+			fmt.Printf("Couldn't commit table creation transaction: %v", err)
+		}
+
+	}
 }
 
 func queryCodes(queryString string, db *sql.DB) [][]string {
@@ -104,7 +146,6 @@ func loadCodes(filepath string, db *sql.DB) {
 	line, isPrefix, err := r.ReadLine()
 	for err == nil && !isPrefix {
 		split := strings.Split(string(line), ",")
-		fmt.Println(split)
 		_, err = stmt.Exec(split[0], split[1])
 		line, isPrefix, err = r.ReadLine()
 	}
