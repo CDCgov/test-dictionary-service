@@ -37,7 +37,9 @@ func main() {
 	defer db.Close()
 
 	conditionalCreateTable(db)
-	loadCodes("./sample_codes.csv", db)
+
+	gopath := os.Getenv("GOPATH")
+	loadCodes(gopath+"/src/gitlab.mitre.org/CDC-SDP/test-dictionary-service/sample_codes.csv", db)
 
 	s.GET("/codes", func(c *gin.Context) {
 		queryString := c.Query("query")
