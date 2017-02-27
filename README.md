@@ -1,9 +1,16 @@
 Dummy Dictionary service for use in development of Concept Dictionary Manager at https://github.com/CDCgov/concept-dictionary-manager
-# Repository Template
-This Github organization was created for use by [CDC](http://www.cdc.gov) programs to collaborate on public health surveillance related projects in support of the [CDC Surveillance Strategy](http://www.cdc.gov/surveillance). This third party web application is not hosted by the CDC, but is used by CDC and its partners to share information and collaborate on software.
 
-This repository serves as a template for other repositories to follow in order to provide the appropriate notices for users in regards to privacy protection, contribution, licensing, copyright, records management and collaboration.
+# Running locally
 
+To run this service locally, be sure to have the latest version of Go installed. Downloads are available [here](https://golang.org/dl/).
+
+You will also need to install a local instance of [postgres](https://www.postgresql.org/). Running locally, the default user and database are `testservice` and `test_service` respectively, and need to be created in your postgres instance before running this service.
+
+Then, clone this repository to your local system, or run `go get github.com/CDCgov/test-dictionary-service` to download the source to your `$GOPATH`.
+
+Navigate to the directory of this repository, and run `go run server.go` to start the service. Alternatively, you can run `go build` to build a binary version of `server.go` and then run `./server` to start the service.
+
+Once this service and the concept dictionary manager found [here](https://github.com/CDCgov/concept-dictionary-manager) are both running on your local system, you will be able to make http requests to the paths mentioned in the concept dictionary manager's readme to search the sample code set contained within this dummy service.
 
 ##Public Domain: 
 This project constitutes a work of the United States Government and is not subject to domestic copyright protection under 17 USC § 105. This project is in the public domain within the United States, and copyright and related rights in 
