@@ -23,9 +23,13 @@ Point the source-to-image builder at this repository's URL on github.
 Edit the deployment of this service to include the following environment variables:
 
 `POSTGRES_PORT_5432_TCP_ADDR` - the IP address of the postgres pod
+
 `POSTGRES_PORT_5432_TCP_PORT` - the port that the postgres pod is serving on
+
 `POSTGRES_USER` - postgres username
+
 `POSTGRES_PASSWORD` - postgres password
+
 `POSTGRES_DATABASE` - postgres database
 
 The first two environment variables are named as such in the case that this service would be deployed within a standard Docker environment, assuming the postgres container was serving on port 5432.
