@@ -12,6 +12,26 @@ Navigate to the directory of this repository, and run `go run server.go` to star
 
 Once this service and the concept dictionary manager found [here](https://github.com/CDCgov/concept-dictionary-manager) are both running on your local system, you will be able to make http requests to the paths mentioned in the concept dictionary manager's readme to search the sample code set contained within this dummy service.
 
+# Running in an OpenShift Cluster
+
+To run this service in an OpenShift cluster, use a go source-to-image builder (see [here](https://github.com/openshift-s2i/s2i-go) for an example).
+
+You will also need to have a postgres pod running within the project that you'd like to deploy this service in. Make note of the postgres pod's IP address, port, username, password, and database that you want the sample codes stored in.
+
+Point the source-to-image builder at this repository's URL on github.
+
+Edit the deployment of this service to include the following environment variables:
+
+`POSTGRES_PORT_5432_TCP_ADDR` - the IP address of the postgres pod
+`POSTGRES_PORT_5432_TCP_PORT` - the port that the postgres pod is serving on
+`POSTGRES_USER` - postgres username
+`POSTGRES_PASSWORD` - postgres password
+`POSTGRES_DATABASE` - postgres database
+
+The first two environment variables are named as such in the case that this service would be deployed within a standard Docker environment, assuming the postgres container was serving on port 5432.
+
+Once OpenShift redeploys this build, it should connect to postgres and the service will be running.
+
 ##Public Domain: 
 This project constitutes a work of the United States Government and is not subject to domestic copyright protection under 17 USC § 105. This project is in the public domain within the United States, and copyright and related rights in 
 the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/). All contributions 
